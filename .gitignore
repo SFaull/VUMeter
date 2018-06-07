@@ -1,0 +1,7 @@
+.vs
+PC Software/Visualiser/bin
+PC Software/Visualiser/obj
+Arduino/VUMeter/__vm
+Arduino/VUMeter/Debug
+Arduino/VUMeter/VUMeter.vcxproj
+Arduino/VUMeter/VUMeter.vcxproj.filters
