@@ -16,6 +16,10 @@
 
 
 #define NUM_LEDS 36
+#define MIDPOINT NUM_LEDS/2
+#define CLIP_COUNT 4
+#define CLIP_LOWER CLIP_COUNT
+#define CLIP_UPPER (NUM_LEDS-CLIP_COUNT)
 
 // Data pin that led data will be written out over
 #define DATA_PIN 3
@@ -23,10 +27,22 @@
 
 CRGB leds[NUM_LEDS];
 
+int LEDMap_left[MIDPOINT];
+int LEDMap_right[MIDPOINT];
+
 void setup() 
 {
+	for (int i = 0; i < MIDPOINT; i++)
+	{
+		LEDMap_left[i] = (MIDPOINT - 1) - i;
+	}
+	for (int i = 0; i < MIDPOINT; i++)
+	{
+		LEDMap_right[i] = MIDPOINT + i;
+	}
+
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
-  FastLED.setBrightness(10);
+  FastLED.setBrightness(3);
   /* Setup serial */
   Serial.begin(115200);
   updateLEDs();
@@ -47,8 +63,6 @@ void loop()
       //char buf [10];
       //sprintf(buf, "%d,%d", level[0], level[1]);
       
-    
-      //client.publish(MQTTtopic, buf);
       updateLEDs();
     }
     else
@@ -71,22 +85,38 @@ void loop()
   
 }
 
+
 void updateLEDs()
 {
-	float percent = (float)level[0]/(float)255;
-	int LEDs = percent*NUM_LEDS;
+	float percent_left = (float)level[0]/(float)255;
+	int LEDs_left = percent_left * MIDPOINT;
 
-	for (int i = 0; i<LEDs; i++)
+	float percent_right = (float)level[1] / (float)255;
+	int LEDs_right = percent_right * MIDPOINT;
+
+	for (int i = 0; i < MIDPOINT; i++)
 	{
-		leds[i] = CRGB(0, 255, 0);
+		if (i >= LEDs_left)
+			leds[LEDMap_left[i]] = CRGB(0, 0, 0);
+		else
+		{
+			if (i > MIDPOINT-CLIP_COUNT)
+				leds[LEDMap_left[i]] = CRGB(255, 0, 0);
+			else
+				leds[LEDMap_left[i]] = CRGB(0, 255, 0);
+		}
+
+		if (i >= LEDs_right)
+			leds[LEDMap_right[i]] = CRGB(0, 0, 0);
+		else
+		{
+			if (i > MIDPOINT - CLIP_COUNT)
+				leds[LEDMap_right[i]] = CRGB(255, 0, 0);
+			else
+				leds[LEDMap_right[i]] = CRGB(0, 255, 0);
+		}
 	}
-  for (int i = LEDs; i<NUM_LEDS; i++)
-  {
-    leds[i] = CRGB(0, 0, 0);
-  }
   
-
-
-	/* apply */
+	// apply 
 	FastLED.show();
 }

@@ -28,7 +28,7 @@ namespace Visualiser
         private void Form1_Load(object sender, EventArgs e)
         {
             SetTimer();
-            Arduino.Connect("COM5");
+            Arduino.Connect("COM3");
             Thread.Sleep(1000);
         }
 
