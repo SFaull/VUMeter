@@ -9,6 +9,8 @@
  * LED    - BUILT_IN
  */
 
+
+#include <FastLED.h>
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <ESP8266mDNS.h>
@@ -22,35 +24,30 @@
 #include <string.h>
 
 
-/* Physical connections */
-#define button        D1               //button on pin D1
-#define LED_BUILTIN   D6
+#define NUM_LEDS 36
 
-/* Timers */
-#define INPUT_READ_TIMEOUT     50     //check for button pressed every 50ms
-#define TEA_READY_TIMEOUT      10000  // tea alarm active for 10 seconds
+// Data pin that led data will be written out over
+#define DATA_PIN D4
+
 
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-const char* deviceName          = "TeaUp_master";
-const char* MQTTtopic           = "TeaUp";
-
-unsigned long runTime         = 0,
-              teaTimer        = 0,
-              readInputTimer  = 0;
+const char* deviceName          = "VUMeter";
+const char* MQTTtopic           = "Audio";
 
 
-// Flags
-bool pending_button_press = false; // true if a button press has been registered
-bool tea_ready = false;
+
+CRGB leds[NUM_LEDS];
 
 void setup() 
 {
   /* Setup I/O */
   pinMode(LED_BUILTIN, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
-  pinMode(button, INPUT_PULLUP);  // Enables the internal pull-up resistor
   //digitalWrite(LED_BUILTIN, HIGH); 
+
+  FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
+
   
   /* Setup serial */
   Serial.begin(115200);
@@ -85,12 +82,12 @@ void loop()
     {
       count = 0;
 
-      char buf [10];
-      sprintf(buf, "%d,%d", level[0], level[1]);
+      //char buf [10];
+      //sprintf(buf, "%d,%d", level[0], level[1]);
       
     
-      client.publish(MQTTtopic, buf);
-      updateLED();
+      //client.publish(MQTTtopic, buf);
+      updateLEDs();
     }
     else
     {
@@ -112,16 +109,28 @@ void loop()
   
 }
 
-
-
-void updateLED()
+void updateLEDs()
 {
-  // use level[0] (left) and level[1] (right) to write to a number of LEDs
-  analogWrite(LED_BUILTIN,level[0]*4);
+	FastLED.setBrightness(level[0]);
+  leds[0] = CRGB(0, 255, 0);
+	/*
+	for (int i = 0; i<NUM_LEDS; i++)
+	{
+		leds[i] = CRGB(0, 0, 0);
+	}
+
+	float percent = (float)255 / (float)level[0];
+	int LEDs = percent*NUM_LEDS;
+
+	for (int i = 0; i<LEDs; i++)
+	{
+		leds[i] = CRGB(0, 255, 0);
+	}
+ */
+
+	/* apply */
+	FastLED.show();
 }
-
-
-
 
 void callback(char* topic, byte* payload, unsigned int length) 
 {
