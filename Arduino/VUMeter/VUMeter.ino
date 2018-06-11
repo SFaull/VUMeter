@@ -15,7 +15,7 @@
 #include <string.h>
 
 
-#define NUM_LEDS 1
+#define NUM_LEDS 36
 
 // Data pin that led data will be written out over
 #define DATA_PIN 3
@@ -26,12 +26,13 @@ CRGB leds[NUM_LEDS];
 void setup() 
 {
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
-
+  FastLED.setBrightness(10);
   /* Setup serial */
   Serial.begin(115200);
+  updateLEDs();
 }
 
-byte level[2];
+byte level[2] = {0,0};
 int count = 0;
 
 void loop() 
@@ -72,22 +73,19 @@ void loop()
 
 void updateLEDs()
 {
-	FastLED.setBrightness(level[0]);
-	leds[0] = CRGB(0, 255, 0);
-	/*
-	for (int i = 0; i<NUM_LEDS; i++)
-	{
-		leds[i] = CRGB(0, 0, 0);
-	}
-
-	float percent = (float)255 / (float)level[0];
+	float percent = (float)level[0]/(float)255;
 	int LEDs = percent*NUM_LEDS;
 
 	for (int i = 0; i<LEDs; i++)
 	{
 		leds[i] = CRGB(0, 255, 0);
 	}
- */
+  for (int i = LEDs; i<NUM_LEDS; i++)
+  {
+    leds[i] = CRGB(0, 0, 0);
+  }
+  
+
 
 	/* apply */
 	FastLED.show();
