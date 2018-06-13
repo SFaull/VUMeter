@@ -15,9 +15,9 @@
 #include <string.h>
 
 
-#define NUM_LEDS 36
+#define NUM_LEDS 50
 #define MIDPOINT NUM_LEDS/2
-#define CLIP_COUNT 4
+#define CLIP_COUNT NUM_LEDS/6
 #define CLIP_LOWER CLIP_COUNT
 #define CLIP_UPPER (NUM_LEDS-CLIP_COUNT)
 
@@ -29,6 +29,7 @@ CRGB leds[NUM_LEDS];
 
 int LEDMap_left[MIDPOINT];
 int LEDMap_right[MIDPOINT];
+
 
 void setup() 
 {
@@ -50,6 +51,10 @@ void setup()
 
 byte level[2] = {0,0};
 int count = 0;
+int left = 0;
+int right = 0;
+
+int spotCount = 0;
 
 void loop() 
 {
@@ -88,11 +93,36 @@ void loop()
 
 void updateLEDs()
 {
+	spotCount++;
+
 	float percent_left = (float)level[0]/(float)255;
 	int LEDs_left = percent_left * MIDPOINT;
 
 	float percent_right = (float)level[1] / (float)255;
 	int LEDs_right = percent_right * MIDPOINT;
+
+	if (LEDs_left > left || LEDs_right > right)
+	{
+		if (LEDs_left > left)
+			left = LEDs_left;
+
+
+		if (LEDs_right > right)
+			right = LEDs_right;
+	}
+	else
+	{
+		if (spotCount >= 2)
+		{
+			spotCount = 0;
+
+			if (left > 0)
+				left--;
+
+			if (right > 0)
+				right--;
+		}
+	}
 
 	for (int i = 0; i < MIDPOINT; i++)
 	{
@@ -106,6 +136,9 @@ void updateLEDs()
 				leds[LEDMap_left[i]] = CRGB(0, 255, 0);
 		}
 
+		if (i == left)
+			leds[LEDMap_left[i]] = CRGB(0, 0, 255);
+
 		if (i >= LEDs_right)
 			leds[LEDMap_right[i]] = CRGB(0, 0, 0);
 		else
@@ -115,6 +148,9 @@ void updateLEDs()
 			else
 				leds[LEDMap_right[i]] = CRGB(0, 255, 0);
 		}
+
+		if (i == right)
+			leds[LEDMap_right[i]] = CRGB(0, 0, 255);
 	}
   
 	// apply 
