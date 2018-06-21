@@ -27,15 +27,13 @@ namespace Visualiser
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            SetTimer();
-            Arduino.Connect("COM3");
-            Thread.Sleep(1000);
+            cmbSerialPorts.DataSource = Arduino.getComPorts();
         }
 
         private void SetTimer()
         {
             // Create a timer with a two second interval.
-            aTimer = new System.Timers.Timer(30);   // probably shouldnt go much faster than 20ms
+            aTimer = new System.Timers.Timer(1);   // probably shouldnt go much faster than 20ms
             // Hook up the Elapsed event for the timer. 
             aTimer.Elapsed += OnTimedEvent;
             aTimer.AutoReset = true;
@@ -63,6 +61,45 @@ namespace Visualiser
             });
 
             
+        }
+
+        private void btnConnect_Click(object sender, EventArgs e)
+        {
+            labelConnectionStatus.Text = "Status:";
+            if (btnConnect.Text == "Connect")
+            {
+                if (cmbSerialPorts.SelectedIndex > -1)
+                {
+                    // MessageBox.Show(String.Format("You selected port '{0}'", cmbSerialPorts.SelectedItem));
+                    bool success = Arduino.Connect(cmbSerialPorts.SelectedItem.ToString());
+                    if (Arduino.isConnected() && success)    // on successful connection
+                    {
+                        btnConnect.Text = "Disconnect";
+                        labelConnectionStatus.Text = "Status: Connected";
+                        Thread.Sleep(500);
+                        SetTimer();
+                    }
+                    else
+                    {
+                        labelConnectionStatus.Text = "Status: [ERROR] No response from device. Try a different COM port";
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Please select a port first");
+                }
+            }
+            else
+            {
+                btnConnect.Text = "Connect";
+                labelConnectionStatus.Text = "Status: Not Connected";
+                Arduino.Disconnect();
+            }
+        }
+
+        private void cmbSerialPorts_MouseClick(object sender, MouseEventArgs e)
+        {
+            cmbSerialPorts.DataSource = Arduino.getComPorts();
         }
     }
 }

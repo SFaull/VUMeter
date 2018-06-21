@@ -16,7 +16,13 @@ namespace Visualiser
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            //Application.Run(new Form1());
+            // Show the system tray icon.
+            using (ProcessIcon pi = new ProcessIcon())
+            {
+                // Make sure the application runs!
+                Application.Run();
+            }
         }
     }
 }
