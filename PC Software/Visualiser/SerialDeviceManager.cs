@@ -134,6 +134,9 @@ namespace Visualiser
 
         public void sendLevel(int left, int right)
         {
+            if (left >= byte.MaxValue) left = byte.MaxValue;
+            if (right >= byte.MaxValue) right = byte.MaxValue;
+
             // left & right levels are in range 0-100
             var level = new byte[3];
             level[0] = Convert.ToByte(left);

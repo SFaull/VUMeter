@@ -28,7 +28,7 @@ namespace Visualiser
         private void Form1_Load(object sender, EventArgs e)
         {
             SetTimer();
-            Arduino.Connect("COM3");
+            Arduino.Connect("COM48");
             Thread.Sleep(1000);
         }
 
@@ -54,15 +54,28 @@ namespace Visualiser
 
         private void updateUI(float master, float left, float right)
         {
-            Invoke((MethodInvoker)delegate  // run on UI thread
+            try
             {
-                progressBarM.Width = (int)((Width * master));
-                progressBarL.Width = (int)((Width * left));
-                progressBarR.Width = (int)((Width * right));
-                Arduino.sendLevel((int)(left * 255), (int)(right * 255));
-            });
+                Invoke((MethodInvoker)delegate  // run on UI thread
+                {
+                    float gain = trackBar.Value * 0.01f;
+
+                    progressBarM.Width = (int)((Width * master * gain));
+                    progressBarL.Width = (int)((Width * left * gain));
+                    progressBarR.Width = (int)((Width * right * gain));
+                    Arduino.sendLevel((int)(left * 255 * gain), (int)(right * 255 * gain));
+                });
+            }
+            catch { Console.WriteLine("Unable to update GUI"); }
 
             
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // reset the LEDs to the zero state
+            for(int i = 0; i<100; i++)
+                Arduino.sendLevel(0, 0);
         }
     }
 }
